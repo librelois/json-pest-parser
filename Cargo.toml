@@ -1,0 +1,22 @@
+[package]
+name = "json-pest-parser"
+version = "0.2.0"
+authors = ["elois <elois@duniter.org>"]
+description = "Parse JSON with pest grammar."
+repository = "https://git.duniter.org/nodes/rust/duniter-rs"
+readme = "README.md"
+keywords = ["json", "pest", "parser"]
+license = "AGPL-3.0"
+edition = "2018"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+failure = "0.1.5"
+pest = "2.1.0"
+pest_derive = "2.1.0"
+unwrap = "1.2.1"
+
+[dev-dependencies]
+pretty_assertions = "0.6.1"
