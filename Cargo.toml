@@ -13,9 +13,9 @@ edition = "2018"
 path = "src/lib.rs"
 
 [dependencies]
-failure = "0.1.5"
 pest = "2.1.0"
 pest_derive = "2.1.0"
+thiserror = "1.0.20"
 unwrap = "1.2.1"
 
 [dev-dependencies]

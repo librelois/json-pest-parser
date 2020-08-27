@@ -29,19 +29,13 @@
 )]
 
 #[macro_use]
-extern crate failure;
-#[macro_use]
 extern crate pest_derive;
 
-#[cfg(test)]
-#[macro_use]
-extern crate pretty_assertions;
-
-use failure::Error;
 use pest::iterators::Pair;
 use pest::Parser;
 use std::collections::HashMap;
 use std::str::FromStr;
+use thiserror::Error;
 use unwrap::unwrap;
 
 #[derive(Parser)]
@@ -196,8 +190,8 @@ impl<'a, S: std::hash::BuildHasher> ToString for JSONValue<'a, S> {
     }
 }
 
-#[derive(Debug, Fail)]
-#[fail(display = "Fail to parse JSON String : {:?}", cause)]
+#[derive(Debug, Error)]
+#[error("Fail to parse JSON String : {:?}", cause)]
 pub struct ParseJsonError {
     pub cause: String,
 }
@@ -280,7 +274,7 @@ fn parse_value<S: std::hash::BuildHasher + Default>(pair: Pair<Rule>) -> JSONVal
 pub fn get_optional_usize<S: std::hash::BuildHasher>(
     json_block: &HashMap<&str, JSONValue<S>, S>,
     field: &str,
-) -> Result<Option<usize>, Error> {
+) -> Result<Option<usize>, ParseJsonError> {
     Ok(match json_block.get(field) {
         Some(value) => {
             if !value.is_null() {
@@ -306,7 +300,7 @@ pub fn get_optional_usize<S: std::hash::BuildHasher>(
 pub fn get_optional_str_not_empty<'a, S: std::hash::BuildHasher>(
     json_block: &'a HashMap<&str, JSONValue<S>, S>,
     field: &str,
-) -> Result<Option<&'a str>, Error> {
+) -> Result<Option<&'a str>, ParseJsonError> {
     let result = get_optional_str(json_block, field);
     if let Ok(Some(value)) = result {
         if !value.is_empty() {
@@ -322,7 +316,7 @@ pub fn get_optional_str_not_empty<'a, S: std::hash::BuildHasher>(
 pub fn get_optional_str<'a, S: std::hash::BuildHasher>(
     json_block: &'a HashMap<&str, JSONValue<S>, S>,
     field: &str,
-) -> Result<Option<&'a str>, Error> {
+) -> Result<Option<&'a str>, ParseJsonError> {
     Ok(match json_block.get(field) {
         Some(value) => {
             if !value.is_null() {
@@ -340,7 +334,7 @@ pub fn get_optional_str<'a, S: std::hash::BuildHasher>(
 pub fn get_u64<S: std::hash::BuildHasher>(
     json_block: &HashMap<&str, JSONValue<S>, S>,
     field: &str,
-) -> Result<u64, Error> {
+) -> Result<u64, ParseJsonError> {
     Ok(json_block
         .get(field)
         .ok_or_else(|| ParseJsonError {
@@ -355,7 +349,7 @@ pub fn get_u64<S: std::hash::BuildHasher>(
 pub fn get_number<S: std::hash::BuildHasher>(
     json_block: &HashMap<&str, JSONValue<S>, S>,
     field: &str,
-) -> Result<f64, Error> {
+) -> Result<f64, ParseJsonError> {
     Ok(json_block
         .get(field)
         .ok_or_else(|| ParseJsonError {
@@ -370,7 +364,7 @@ pub fn get_number<S: std::hash::BuildHasher>(
 pub fn get_str<'a, S: std::hash::BuildHasher>(
     json_block: &'a HashMap<&str, JSONValue<S>, S>,
     field: &str,
-) -> Result<&'a str, Error> {
+) -> Result<&'a str, ParseJsonError> {
     Ok(json_block
         .get(field)
         .ok_or_else(|| ParseJsonError {
@@ -450,6 +444,7 @@ pub fn get_object_array<'a, S: std::hash::BuildHasher>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn test_parse_too_large_number() {
